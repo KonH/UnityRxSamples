@@ -4,3 +4,5 @@
 Library/
 obj/
 Temp/
+.idea
+*.user
