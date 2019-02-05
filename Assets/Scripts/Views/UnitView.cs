@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 using UnityEngine.UI;
 using UniRx;
 
@@ -9,6 +10,7 @@ public class UnitView : MonoBehaviour {
 	public Text       NameText;
 	public Text       HealthText;
 	public Selectable UpgradeButton;
+	public float      AnimationTime;
 
 	UnitModel _unit;
 
@@ -25,6 +27,8 @@ public class UnitView : MonoBehaviour {
 		_unit.CurrentHp.Subscribe(_ => UpdateHealth());
 		_unit.MaxHp    .Subscribe(_ => UpdateHealth());
 		_unit.IsDead   .Subscribe(_ => UpdateHealth());
+
+		_unit.UpgradeLevel.SkipLatestValueOnSubscribe().Subscribe(_ => MainThreadDispatcher.StartCoroutine(AnimateName()));
 	}
 
 	void UpdateHealth() {
@@ -32,5 +36,23 @@ public class UnitView : MonoBehaviour {
 			"{0}/{1} (is dead? {2})",
 			_unit.CurrentHp.Value, _unit.MaxHp.Value, _unit.IsDead.Value
 		);
+	}
+
+	IEnumerator AnimateName() {
+		var t = 0.0f;
+		var trans = NameText.transform;
+		var initialScale = trans.localScale;
+		var animSpeed = 2.0f / AnimationTime;
+		while ( t < 1.0f ) {
+			trans.localScale = Vector3.Lerp(initialScale, initialScale * 2, t);
+			t += Time.deltaTime * animSpeed;
+			yield return null;
+		}
+		t = 0.0f;
+		while ( t < 1.0f ) {
+			trans.localScale = Vector3.Lerp(initialScale * 2, initialScale, t);
+			t += Time.deltaTime * animSpeed;
+			yield return null;
+		}
 	}
 }
